@@ -18,7 +18,7 @@ public class MethodService : IMethodService
         return await _context.Methods.ToListAsync();
     }
 
-    public async Task<Method> GetMethodByIdAsync(long id)
+    public async Task<Method?> GetMethodByIdAsync(long id)
     {
         return await _context.Methods.FindAsync(id);
     }

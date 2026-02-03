@@ -22,7 +22,7 @@ public class AnalysisService : IAnalysisService
             .ToListAsync();
     }
 
-    public async Task<Analysis> GetAnalysisByIdAsync(long id)
+    public async Task<Analysis?> GetAnalysisByIdAsync(long id)
     {
         return await _context.Analyses
             .Include(a => a.Parameter)

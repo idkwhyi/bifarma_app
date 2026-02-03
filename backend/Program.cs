@@ -10,6 +10,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+});
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -28,7 +39,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var method = app.MapGroup("/methods");
+app.UseCors("AllowAll");
+
+var method = app.MapGroup("/api/methods");
 
 method.MapGet("/", async (IMethodService service) => await service.GetAllMethodsAsync());
 
@@ -53,7 +66,7 @@ method.MapDelete("/{id}", async (long id, IMethodService service) =>
     return result ? Results.NoContent() : Results.NotFound();
 });
 
-var parameter = app.MapGroup("/parameters");
+var parameter = app.MapGroup("/api/parameters");
 
 parameter.MapGet("/", async (IParameterService service) => await service.GetAllParametersAsync());
 
@@ -78,7 +91,7 @@ parameter.MapDelete("/{id}", async (long id, IParameterService service) =>
     return result ? Results.NoContent() : Results.NotFound();
 });
 
-var sampleTypes = app.MapGroup("/sample-types");
+var sampleTypes = app.MapGroup("/api/sample-types");
 
 sampleTypes.MapGet("/", async (ISampleTypeService service) => await service.GetAllSampleTypesAsync());
 
@@ -103,7 +116,7 @@ sampleTypes.MapDelete("/{id}", async (long id, ISampleTypeService service) =>
     return result ? Results.NoContent() : Results.NotFound();
 });
 
-var analyses = app.MapGroup("/analyses");
+var analyses = app.MapGroup("/api/analyses");
 
 analyses.MapGet("/", async (IAnalysisService service) => await service.GetAllAnalysesAsync());
 

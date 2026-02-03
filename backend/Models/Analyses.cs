@@ -49,11 +49,11 @@ public class Analysis
     public DateTime LeadTime { get; set; }
 
     [ForeignKey("ParameterId")]
-    public virtual Parameter Parameter { get; set; }
+    public virtual Parameter? Parameter { get; set; }
 
     [ForeignKey("MethodId")]
-    public virtual Method Method { get; set; }
+    public virtual Method? Method { get; set; }
 
     [ForeignKey("SampleTypeId")]
-    public virtual SampleType SampleType { get; set; }
+    public virtual SampleType? SampleType { get; set; }
 }

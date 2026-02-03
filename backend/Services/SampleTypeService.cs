@@ -18,7 +18,7 @@ public class SampleTypeService : ISampleTypeService
         return await _context.SampleTypes.ToListAsync();
     }
 
-    public async Task<SampleType> GetSampleTypeByIdAsync(long id)
+    public async Task<SampleType?> GetSampleTypeByIdAsync(long id)
     {
         return await _context.SampleTypes.FindAsync(id);
     }

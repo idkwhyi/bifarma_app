@@ -18,7 +18,7 @@ public class ParameterService : IParameterService
         return await _context.Parameters.ToListAsync();
     }
 
-    public async Task<Parameter> GetParameterByIdAsync(long id)
+    public async Task<Parameter?> GetParameterByIdAsync(long id)
     {
         return await _context.Parameters.FindAsync(id);
     }
