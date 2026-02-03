@@ -1,8 +1,19 @@
+
+using backend.Data;
+using backend.Services;
+using backend.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ISampleTypeService, SampleTypeService>();
 
 var app = builder.Build();
 
@@ -14,28 +25,29 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+var sampleTypes = app.MapGroup("/sample-types");
 
-app.MapGet("/weatherforecast", () =>
+sampleTypes.MapGet("/", async (ISampleTypeService service) => await service.GetAllSampleTypesAsync());
+
+sampleTypes.MapGet("/{id}", async (long id, ISampleTypeService service) =>
+    await service.GetSampleTypeByIdAsync(id) is SampleType sampleType ? Results.Ok(sampleType) : Results.NotFound());
+
+sampleTypes.MapPost("/", async (SampleType sampleType, ISampleTypeService service) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    var createdSampleType = await service.CreateSampleTypeAsync(sampleType);
+    return Results.Created($"/sample-types/{createdSampleType.Id}", createdSampleType);
+});
+
+sampleTypes.MapPut("/{id}", async (long id, SampleType sampleType, ISampleTypeService service) =>
+{
+    var updatedSampleType = await service.UpdateSampleTypeAsync(id, sampleType);
+    return updatedSampleType is null ? Results.NotFound() : Results.Ok(updatedSampleType);
+});
+
+sampleTypes.MapDelete("/{id}", async (long id, ISampleTypeService service) =>
+{
+    var result = await service.DeleteSampleTypeAsync(id);
+    return result ? Results.NoContent() : Results.NotFound();
+});
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
