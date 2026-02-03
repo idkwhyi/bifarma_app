@@ -39,7 +39,7 @@ export default function AnalysesForm({
         parameterId: 0,
         methodId: 0,
         sampleTypeId: 0,
-        leadTime: new Date().toISOString().slice(0, 16), // Default format for datetime-local
+        leadTime: new Date().toISOString().slice(0, 16),
     });
 
     const [methods, setMethods] = useState<Option[]>([]);
@@ -53,10 +53,9 @@ export default function AnalysesForm({
                 const [methodsRes, paramsRes, samplesRes] = await Promise.all([
                     fetch(`${API_BASE_URL}/methods`),
                     fetch(`${API_BASE_URL}/parameters`),
-                    fetch(`${API_BASE_URL}/sampletypes`) // Endpoint might vary, assuming 'sampletypes' or similar
+                    fetch(`${API_BASE_URL}/sample-types`) 
                 ]);
 
-                // We might need to handle 404s if endpoints don't exist yet, but assuming they do or will
                 if (methodsRes.ok) setMethods(await methodsRes.json());
                 if (paramsRes.ok) setParameters(await paramsRes.json());
                 if (samplesRes.ok) setSampleTypes(await samplesRes.json());

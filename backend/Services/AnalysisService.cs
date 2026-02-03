@@ -33,6 +33,11 @@ public class AnalysisService : IAnalysisService
 
     public async Task<Analysis> CreateAnalysisAsync(Analysis analysis)
     {
+        // Fix error save analyses karna datetime error
+        analysis.LeadTime = DateTime.SpecifyKind(analysis.LeadTime, DateTimeKind.Utc);
+        analysis.CreatedOn = DateTime.UtcNow;
+        analysis.LastUpdatedOn = DateTime.UtcNow;
+
         _context.Analyses.Add(analysis);
         await _context.SaveChangesAsync();
         return analysis;
@@ -52,16 +57,13 @@ public class AnalysisService : IAnalysisService
         existingAnalysis.LastUpdatedBy = analysis.LastUpdatedBy;
         existingAnalysis.LastUpdatedOn = analysis.LastUpdatedOn;
         
-        // Update relationships if provided, though typically IDs are updated.
-        // Assuming the input analysis object has the correct foreign keys set.
         existingAnalysis.ParameterId = analysis.ParameterId;
         existingAnalysis.MethodId = analysis.MethodId;
         existingAnalysis.SampleTypeId = analysis.SampleTypeId;
-        existingAnalysis.LeadTime = analysis.LeadTime;
+        existingAnalysis.LeadTime = DateTime.SpecifyKind(analysis.LeadTime, DateTimeKind.Utc);
 
         await _context.SaveChangesAsync();
         
-        // Reload to get included properties if needed, or just return existing
         return existingAnalysis;
     }
 
