@@ -16,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ISampleTypeService, SampleTypeService>();
 builder.Services.AddScoped<IParameterService, ParameterService>();
 builder.Services.AddScoped<IMethodService, MethodService>();
+builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 
 var app = builder.Build();
 
@@ -99,6 +100,31 @@ sampleTypes.MapPut("/{id}", async (long id, SampleType sampleType, ISampleTypeSe
 sampleTypes.MapDelete("/{id}", async (long id, ISampleTypeService service) =>
 {
     var result = await service.DeleteSampleTypeAsync(id);
+    return result ? Results.NoContent() : Results.NotFound();
+});
+
+var analyses = app.MapGroup("/analyses");
+
+analyses.MapGet("/", async (IAnalysisService service) => await service.GetAllAnalysesAsync());
+
+analyses.MapGet("/{id}", async (long id, IAnalysisService service) =>
+    await service.GetAnalysisByIdAsync(id) is Analysis analysis ? Results.Ok(analysis) : Results.NotFound());
+
+analyses.MapPost("/", async (Analysis analysis, IAnalysisService service) =>
+{
+    var createdAnalysis = await service.CreateAnalysisAsync(analysis);
+    return Results.Created($"/analyses/{createdAnalysis.Id}", createdAnalysis);
+});
+
+analyses.MapPut("/{id}", async (long id, Analysis analysis, IAnalysisService service) =>
+{
+    var updatedAnalysis = await service.UpdateAnalysisAsync(id, analysis);
+    return updatedAnalysis is null ? Results.NotFound() : Results.Ok(updatedAnalysis);
+});
+
+analyses.MapDelete("/{id}", async (long id, IAnalysisService service) =>
+{
+    var result = await service.DeleteAnalysisAsync(id);
     return result ? Results.NoContent() : Results.NotFound();
 });
 
