@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "PIuSxmAi2Jc=",
+  "success": true,
+  "projectFilePath": "/Users/matthewchristiansusanto/Desktop/bifarma_app/backend/backend.csproj",
+  "expectedPackageFiles": [
+    "/Users/matthewchristiansusanto/.nuget/packages/microsoft.aspnetcore.openapi/10.0.2/microsoft.aspnetcore.openapi.10.0.2.nupkg.sha512",
+    "/Users/matthewchristiansusanto/.nuget/packages/microsoft.openapi/2.0.0/microsoft.openapi.2.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
