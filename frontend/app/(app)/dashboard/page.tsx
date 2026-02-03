@@ -1,4 +1,70 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
+interface Analysis {
+    id: number;
+    code: string;
+    leadTime: string;
+    parameter?: { code: string };
+    method?: { code: string };
+    sampleType?: { code: string };
+    lastUpdatedOn?: string;
+}
+
 export default function DashboardPage() {
+    const [counts, setCounts] = useState({
+        analyses: 0,
+        sampleTypes: 0,
+        methods: 0,
+        parameters: 0,
+    });
+    const [recentAnalyses, setRecentAnalyses] = useState<Analysis[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const API_BASE = "http://localhost:5231/api";
+                const [analysesRes, sampleTypesRes, methodsRes, parametersRes] = await Promise.all([
+                    fetch(`${API_BASE}/analyses`),
+                    fetch(`${API_BASE}/sample-types`),
+                    fetch(`${API_BASE}/methods`),
+                    fetch(`${API_BASE}/parameters`),
+                ]);
+
+                if (analysesRes.ok && sampleTypesRes.ok && methodsRes.ok && parametersRes.ok) {
+                    const analysesData: Analysis[] = await analysesRes.json();
+                    const sampleTypesData = await sampleTypesRes.json();
+                    const methodsData = await methodsRes.json();
+                    const parametersData = await parametersRes.json();
+
+                    setCounts({
+                        analyses: analysesData.length,
+                        sampleTypes: sampleTypesData.length,
+                        methods: methodsData.length,
+                        parameters: parametersData.length,
+                    });
+
+                    const sortedAnalyses = analysesData.sort((a, b) => {
+                        const dateA = a.lastUpdatedOn ? new Date(a.lastUpdatedOn).getTime() : 0;
+                        const dateB = b.lastUpdatedOn ? new Date(b.lastUpdatedOn).getTime() : 0;
+                        return dateB - dateA;
+                    }).slice(0, 5);
+
+                    setRecentAnalyses(sortedAnalyses);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboard data", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     return (
         <div className="space-y-6">
             <div className="md:flex md:items-center md:justify-between">
@@ -8,17 +74,17 @@ export default function DashboardPage() {
                     </h2>
                 </div>
                 <div className="mt-4 flex md:ml-4 md:mt-0">
-                    <button
-                        type="button"
+                    <Link
+                        href="/analyses"
                         className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     >
-                        Create New Analysis
-                    </button>
+                        Manage Analyses
+                    </Link>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {/* Stat Card 1 */}
+                {/* Stat Card 1 - Analyses */}
                 <div className="overflow-hidden rounded-lg bg-white dark:bg-zinc-900 shadow ring-1 ring-gray-900/5 dark:ring-white/10">
                     <div className="p-5">
                         <div className="flex items-center">
@@ -31,7 +97,9 @@ export default function DashboardPage() {
                                 <dl>
                                     <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Analyses</dt>
                                     <dd>
-                                        <div className="text-lg font-medium text-gray-900 dark:text-white">71</div>
+                                        <div className="text-lg font-medium text-gray-900 dark:text-white">
+                                            {isLoading ? "..." : counts.analyses}
+                                        </div>
                                     </dd>
                                 </dl>
                             </div>
@@ -39,7 +107,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Stat Card 2 */}
+                {/* Stat Card 2 - Sample Types */}
                 <div className="overflow-hidden rounded-lg bg-white dark:bg-zinc-900 shadow ring-1 ring-gray-900/5 dark:ring-white/10">
                     <div className="p-5">
                         <div className="flex items-center">
@@ -52,7 +120,9 @@ export default function DashboardPage() {
                                 <dl>
                                     <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Sample Types</dt>
                                     <dd>
-                                        <div className="text-lg font-medium text-gray-900 dark:text-white">12</div>
+                                        <div className="text-lg font-medium text-gray-900 dark:text-white">
+                                            {isLoading ? "..." : counts.sampleTypes}
+                                        </div>
                                     </dd>
                                 </dl>
                             </div>
@@ -60,7 +130,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Stat Card 3 */}
+                {/* Stat Card 3 - Methods */}
                 <div className="overflow-hidden rounded-lg bg-white dark:bg-zinc-900 shadow ring-1 ring-gray-900/5 dark:ring-white/10">
                     <div className="p-5">
                         <div className="flex items-center">
@@ -71,9 +141,11 @@ export default function DashboardPage() {
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Pending Tests</dt>
+                                    <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Methods</dt>
                                     <dd>
-                                        <div className="text-lg font-medium text-gray-900 dark:text-white">4</div>
+                                        <div className="text-lg font-medium text-gray-900 dark:text-white">
+                                            {isLoading ? "..." : counts.methods}
+                                        </div>
                                     </dd>
                                 </dl>
                             </div>
@@ -81,7 +153,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Stat Card 4 */}
+                {/* Stat Card 4 - Parameters */}
                 <div className="overflow-hidden rounded-lg bg-white dark:bg-zinc-900 shadow ring-1 ring-gray-900/5 dark:ring-white/10">
                     <div className="p-5">
                         <div className="flex items-center">
@@ -92,9 +164,11 @@ export default function DashboardPage() {
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Completed Today</dt>
+                                    <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Parameters</dt>
                                     <dd>
-                                        <div className="text-lg font-medium text-gray-900 dark:text-white">24</div>
+                                        <div className="text-lg font-medium text-gray-900 dark:text-white">
+                                            {isLoading ? "..." : counts.parameters}
+                                        </div>
                                     </dd>
                                 </dl>
                             </div>
@@ -103,13 +177,50 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Recent Activity Table Placeholder */}
+            {/* Recent Activity Table */}
             <div className="overflow-hidden rounded-lg bg-white dark:bg-zinc-900 shadow ring-1 ring-gray-900/5 dark:ring-white/10">
                 <div className="border-b border-gray-200 dark:border-zinc-800 px-4 py-5 sm:px-6">
                     <h3 className="text-base font-semibold leading-6 text-gray-900 dark:text-white">Recent Analyses</h3>
                 </div>
-                <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-                    <p>No recent analysis found. Start by creating a new one.</p>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-300 dark:divide-zinc-700">
+                        <thead className="bg-gray-50 dark:bg-zinc-800">
+                            <tr>
+                                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Code</th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Parameter</th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Method</th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={4} className="py-4 text-center text-sm text-gray-500">Loading...</td>
+                                </tr>
+                            ) : recentAnalyses.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} className="py-4 text-center text-sm text-gray-500">No recent analyses found.</td>
+                                </tr>
+                            ) : (
+                                recentAnalyses.map((analysis) => (
+                                    <tr key={analysis.id}>
+                                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                                            {analysis.code}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {analysis.parameter?.code}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {analysis.method?.code}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {analysis.lastUpdatedOn ? new Date(analysis.lastUpdatedOn).toLocaleDateString() : '-'}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
