@@ -144,6 +144,9 @@ export default function AnalysesPage() {
                                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                                     Sample Type
                                 </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                                    Description
+                                </th>
                                 <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                     <span className="sr-only">Actions</span>
                                 </th>
@@ -166,6 +169,9 @@ export default function AnalysesPage() {
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                                         {analysis.sampleType?.code || analysis.sampleTypeId}
+                                    </td>
+                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                        {analysis.description || ""}
                                     </td>
                                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                         <button onClick={() => handleEdit(analysis)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4">
